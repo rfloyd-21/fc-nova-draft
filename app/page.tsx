@@ -1,252 +1,141 @@
-'use client';
+import { kv } from '@vercel/kv';
+import { NextResponse } from 'next/server';
 
-import { useState, useEffect } from 'react';
+const THEMES = [
+  { id: 'metal', name: '80s Hair Metal', redTeamName: 'Red Rebels', blueTeamName: 'Blue' },
+  { id: 'lounge', name: '70s Lounge', redTeamName: 'Red Velvet', blueTeamName: 'Blue Silk' },
+  { id: 'cigar', name: '1920s Cigar Club', redTeamName: 'Red Cognac', blueTeamName: 'Blue Bourbons' },
+  { id: 'soccer', name: '70s Vintage Soccer', redTeamName: 'Red Athletic', blueTeamName: 'Blue United' },
+  { id: 'lasers', name: 'Lasers', redTeamName: 'Red Lasers', blueTeamName: 'Blue Phasers' }
+];
 
-export default function DraftPage() {
-  const [state, setState] = useState<any>(null);
-  const [myRole, setMyRole] = useState<string | null>(null); // 'red', 'blue', or null
-  const [nameInput, setNameInput] = useState('');
-  const [playerInput, setPlayerInput] = useState('');
-  const [isFlipping, setIsFlipping] = useState(false);
-  const [shuffledRed, setShuffledRed] = useState<any[]>([]);
-  const [shuffledBlue, setShuffledBlue] = useState<any[]>([]);
-
-  useEffect(() => {
-    const savedRole = localStorage.getItem('fc_nova_role');
-    if (savedRole) setMyRole(savedRole);
-    fetchState();
-
-    const interval = setInterval(fetchState, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (state && state.picks) {
-      const redPicks = state.picks.filter((p: any) => p.team === 'red');
-      const bluePicks = state.picks.filter((p: any) => p.team === 'blue');
-      
-      setShuffledRed([...redPicks].sort((a, b) => a.player.localeCompare(b.player)));
-      setShuffledBlue([...bluePicks].sort((a, b) => a.player.localeCompare(b.player)));
-    }
-  }, [state]);
-
-  const fetchState = async () => {
-    try {
-      const res = await fetch('/api/draft');
-      const data = await res.json();
-      setState(data);
-    } catch (err) {
-      console.error("Error loading state", err);
-    }
+async function getInitialState() {
+  const defaultTheme = THEMES[Math.floor(Math.random() * THEMES.length)];
+  return {
+    theme: defaultTheme,
+    redCaptain: '',
+    blueCaptain: '',
+    coinFlipResult: null,
+    picks: [],
+    status: 'setup',
+    turn: null,
+    draftStyle: null,
+    redFinished: false,
+    blueFinished: false,
   };
+}
 
-  const runAction = async (action: string, payload: any = {}) => {
-    try {
-      const res = await fetch('/api/draft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, payload })
-      });
-      const data = await res.json();
-      setState(data);
-      return data;
-    } catch (err) {
-      console.error("Error executing action", err);
-    }
-  };
+function getNextTurn(
+  pickCount: number,
+  firstPicker: string,
+  draftStyle: string
+): string {
+  const second = firstPicker === 'red' ? 'blue' : 'red';
 
-  const handleRegister = async (role: 'red' | 'blue') => {
-    if (!nameInput.trim()) return;
-    localStorage.setItem('fc_nova_role', role);
-    setMyRole(role);
-    await runAction(`register_${role}`, { name: nameInput.trim() });
-    setNameInput('');
-  };
-
-  const handleCoinFlip = () => {
-    setIsFlipping(true);
-    setTimeout(async () => {
-      await runAction('flip_coin');
-      setIsFlipping(false);
-    }, 2000);
-  };
-
-  const handlePick = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!playerInput.trim()) return;
-    await runAction('pick_player', { player: playerInput.trim() });
-    setPlayerInput('');
-  };
-
-  const handleWhatsAppCopy = () => {
-    if (!state) return;
-    const text = `⚽️ FC Nova Cidade Oeste Lineup ⚽️\n🎭 Theme: ${state.theme.name}\n\n🔴 ${state.theme.redTeamName.toUpperCase()} (${state.redCaptain}):\n${shuffledRed.map(p => ` • ${p.player}`).join('\n')}\n\n🔵 ${state.theme.blueTeamName.toUpperCase()} (${state.blueCaptain}):\n${shuffledBlue.map(p => ` • ${p.player}`).join('\n')}`;
-    navigator.clipboard.writeText(text);
-    alert('Lineup text copied directly to clipboard! Ready to paste into WhatsApp.');
-  };
-
-  if (!state) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500 font-medium">Connecting to locker room...</p>
-      </div>
-    );
+  if (draftStyle === 'snake') {
+    const pos = pickCount % 4;
+    return (pos === 0 || pos === 3) ? firstPicker : second;
   }
 
-  const themeStyles: any = {
-    metal: { bg: 'bg-zinc-50', card: 'border-2 border-purple-500', btn: 'bg-gradient-to-r from-pink-500 to-purple-600 text-white', font: 'font-mono' },
-    lounge: { bg: 'bg-amber-50/30', card: 'border-2 border-amber-600 bg-amber-50/50', btn: 'bg-orange-600 text-white', font: 'font-serif' },
-    cigar: { bg: 'bg-slate-100', card: 'border-2 border-slate-800 bg-white shadow-sm', btn: 'bg-slate-800 text-white', font: 'font-serif' },
-    soccer: { bg: 'bg-stone-100', card: 'border-4 border-double border-stone-700 bg-orange-50/10', btn: 'bg-stone-800 text-stone-100', font: 'font-sans tracking-tight font-bold' },
-    lasers: { bg: 'bg-white', card: 'border-2 border-cyan-400 border-dashed', btn: 'bg-cyan-500 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]', font: 'font-mono' }
-  };
+  // Alternating: 1 2 2 1 2 1 2 1 2 ...
+  if (pickCount === 0) return firstPicker;
+  if (pickCount === 1) return second;
+  if (pickCount === 2) return second;
+  return (pickCount % 2 === 1) ? firstPicker : second;
+}
 
-  const currentStyle = themeStyles[state.theme.id] || themeStyles.soccer;
+export async function GET() {
+  try {
+    let state: any = await kv.get('nova_draft_state');
+    if (!state) {
+      state = await getInitialState();
+      await kv.set('nova_draft_state', state);
+    }
+    return NextResponse.json(state);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch state' }, { status: 500 });
+  }
+}
 
-  return (
-    <div className={`min-h-screen ${currentStyle.bg} ${currentStyle.font} text-slate-800 px-4 py-6 max-w-md mx-auto flex flex-col justify-between`}>
-      <header className="text-center mb-6">
-        <h1 className="text-xl font-extrabold uppercase tracking-wide text-slate-900">FC Nova Cidade Oeste</h1>
-        <p className="text-xs font-semibold text-slate-500 mt-1">Weekly Draft Board</p>
-        <div className="inline-block mt-3 px-3 py-1 bg-white border border-slate-200 text-xs rounded-full shadow-xs">
-          Vibe: <span className="underline decoration-indigo-400 font-bold">{state.theme.name}</span>
-        </div>
-      </header>
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { action, payload } = body;
+    let state: any = await kv.get('nova_draft_state');
 
-      <main className="flex-grow">
-        {state.status === 'setup' && (
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-5">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 text-center">Captain Registration</h2>
-            
-            <div className="p-3 border rounded-lg bg-red-50/30 border-red-100">
-              <p className="text-xs font-bold text-red-600 uppercase mb-2">🔴 Slot 1: {state.theme.redTeamName}</p>
-              {state.redCaptain ? (
-                <p className="text-sm font-semibold text-slate-700">Checked In: <span className="font-bold">{state.redCaptain}</span></p>
-              ) : myRole === 'blue' ? (
-                <p className="text-xs italic text-slate-400">Waiting for other captain...</p>
-              ) : (
-                <div className="flex gap-2">
-                  <input type="text" placeholder="Enter your name" value={nameInput} onChange={e => setNameInput(e.target.value)} className="border px-3 py-2 text-sm rounded-md w-full bg-white text-slate-800" />
-                  <button onClick={() => handleRegister('red')} className="bg-red-600 text-white text-xs font-bold px-3 py-2 rounded-md whitespace-nowrap">Claim Red</button>
-                </div>
-              )}
-            </div>
+    if (!state) state = await getInitialState();
 
-            <div className="p-3 border rounded-lg bg-blue-50/30 border-blue-100">
-              <p className="text-xs font-bold text-blue-600 uppercase mb-2">🔵 Slot 2: {state.theme.blueTeamName}</p>
-              {state.blueCaptain ? (
-                <p className="text-sm font-semibold text-slate-700">Checked In: <span className="font-bold">{state.blueCaptain}</span></p>
-              ) : myRole === 'red' ? (
-                <p className="text-xs italic text-slate-400">Send link to partner...</p>
-              ) : (
-                <div className="flex gap-2">
-                  <input type="text" placeholder="Enter your name" value={nameInput} onChange={e => setNameInput(e.target.value)} className="border px-3 py-2 text-sm rounded-md w-full bg-white text-slate-800" />
-                  <button onClick={() => handleRegister('blue')} className="bg-blue-600 text-white text-xs font-bold px-3 py-2 rounded-md whitespace-nowrap">Claim Blue</button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+    if (action === 'reset') {
+      state = await getInitialState();
+    }
 
-        {state.status === 'coinflip' && (
-          <div className="text-center py-10 space-y-6">
-            <p className="text-sm font-semibold text-slate-600">{state.redCaptain} 🆚 {state.blueCaptain}</p>
-            <div className="flex justify-center my-4">
-              <div className={`w-28 h-28 rounded-full bg-amber-400 border-4 border-amber-500 shadow-md flex items-center justify-center font-black text-amber-900 text-lg ${isFlipping ? 'animate-spin' : ''}`}>
-                ⚽️ COIN
-              </div>
-            </div>
-            <button onClick={handleCoinFlip} disabled={isFlipping} className={`w-full py-3 rounded-lg font-bold uppercase text-sm tracking-wider shadow-sm transition ${currentStyle.btn}`}>
-              {isFlipping ? 'Spinning Fat Coin...' : 'Flip Manual Coin'}
-            </button>
-          </div>
-        )}
+    else if (action === 'register_red') {
+      state.redCaptain = payload.name;
+      if (state.blueCaptain) state.status = 'coinflip';
+    }
 
-        {(state.status === 'drafting' || state.status === 'finished') && (
-          <div className="space-y-5">
-            {state.status === 'drafting' && (
-              <div className="text-center p-3 rounded-lg border bg-white shadow-xs">
-                {state.turn === myRole ? (
-                  <div className="animate-pulse text-sm font-bold text-emerald-600">
-                    🔥 It is your turn! Pick your player below.
-                  </div>
-                ) : (
-                  <div className="text-sm font-semibold text-slate-500">
-                    ⏳ Waiting on {state.turn === 'red' ? state.redCaptain : state.blueCaptain} to pick...
-                  </div>
-                )}
-              </div>
-            )}
+    else if (action === 'register_blue') {
+      state.blueCaptain = payload.name;
+      if (state.redCaptain) state.status = 'coinflip';
+    }
 
-            {state.status === 'drafting' && state.turn === myRole && (
-              <form onSubmit={handlePick} className="flex gap-2">
-                <input type="text" placeholder="Type player full name..." value={playerInput} onChange={e => setPlayerInput(e.target.value)} className="border border-slate-300 px-3 py-3 text-sm rounded-lg w-full bg-white text-slate-800 font-medium" required />
-                <button type="submit" className={`px-5 py-3 rounded-lg font-bold text-xs uppercase tracking-wider ${currentStyle.btn}`}>
-                  Lock
-                </button>
-              </form>
-            )}
+    else if (action === 'flip_coin') {
+      const winner = Math.random() < 0.5 ? 'red' : 'blue';
+      state.coinFlipResult = winner;
+      state.turn = winner;
+      state.status = 'style';
+    }
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs">
-                <div className="text-center border-b pb-2 mb-2">
-                  <p className="text-xs font-black text-red-600 uppercase tracking-tight">{state.theme.redTeamName}</p>
-                  <p className="text-[10px] font-bold text-slate-400 truncate">Cap: {state.redCaptain}</p>
-                </div>
-                <ul className="space-y-1.5 min-h-[150px]">
-                  {shuffledRed.map((p) => (
-                    <li key={p.id} className="text-xs font-semibold bg-slate-50 border border-slate-100 p-2 rounded-md truncate text-slate-700">
-                      • {p.player}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+    else if (action === 'set_draft_style') {
+      state.draftStyle = payload.style;
+      state.status = 'drafting';
+    }
 
-              <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs">
-                <div className="text-center border-b pb-2 mb-2">
-                  <p className="text-xs font-black text-blue-600 uppercase tracking-tight">{state.theme.blueTeamName}</p>
-                  <p className="text-[10px] font-bold text-slate-400 truncate">Cap: {state.blueCaptain}</p>
-                </div>
-                <ul className="space-y-1.5 min-h-[150px]">
-                  {shuffledBlue.map((p) => (
-                    <li key={p.id} className="text-xs font-semibold bg-slate-50 border border-slate-100 p-2 rounded-md truncate text-slate-700">
-                      • {p.player}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+    else if (action === 'pick_player') {
+      const alreadyPicked = state.picks.some(
+        (p: any) => p.player.toLowerCase() === payload.player.toLowerCase()
+      );
+      if (alreadyPicked) {
+        return NextResponse.json({ ...state, error: 'Player already picked!' });
+      }
 
-            <div className="flex gap-2 pt-2">
-              {state.picks.length > 0 && state.status === 'drafting' && state.picks[state.picks.length - 1].team === myRole && (
-                <button onClick={() => runAction('undo')} className="w-1/2 border border-slate-300 bg-white text-slate-600 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1 shadow-xs hover:bg-slate-50">
-                  ↩ Undo Last Pick
-                </button>
-              )}
-              {state.status === 'drafting' && (state.picks.length >= 2) && (
-                <button onClick={() => runAction('finish')} className="w-full bg-slate-900 text-white font-bold py-2 px-3 rounded-lg text-xs uppercase tracking-wider shadow-xs ml-auto">
-                  🏁 Finish Draft & Lock
-                </button>
-              )}
-            </div>
+      const newPick = {
+        id: Date.now().toString(),
+        player: payload.player,
+        team: state.turn,
+        captain: state.turn === 'red' ? state.redCaptain : state.blueCaptain,
+      };
+      state.picks.push(newPick);
+      state.turn = getNextTurn(state.picks.length, state.coinFlipResult, state.draftStyle);
+    }
 
-            {state.status === 'finished' && (
-              <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-center space-y-3">
-                <p className="text-xs font-bold text-emerald-800 uppercase tracking-wide">🏆 Draft Complete & Locked!</p>
-                <button onClick={handleWhatsAppCopy} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 px-4 rounded-lg text-xs uppercase tracking-wider shadow-sm transition">
-                  Copy to WhatsApp 📲
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </main>
+    else if (action === 'undo') {
+      if (state.picks.length > 0) {
+        const removedPick = state.picks.pop();
+        state.turn = removedPick.team;
+        if (state.status === 'finished' || state.status === 'finishing') {
+          state.status = 'drafting';
+          state.redFinished = false;
+          state.blueFinished = false;
+        }
+      }
+    }
 
-      <footer className="mt-8 pt-4 border-t border-slate-200/60 text-center">
-        <button onClick={() => { if(confirm("Permanently wipe current state?")) runAction('reset'); }} className="text-[10px] uppercase font-bold tracking-widest text-slate-300 hover:text-red-400 transition">
-          ☢ Manual System Reset
-        </button>
-      </footer>
-    </div>
-  );
+    else if (action === 'captain_finish') {
+      if (payload.team === 'red') state.redFinished = true;
+      if (payload.team === 'blue') state.blueFinished = true;
+
+      if (state.redFinished && state.blueFinished) {
+        state.status = 'finished';
+        state.turn = null;
+      } else {
+        state.status = 'finishing';
+      }
+    }
+
+    await kv.set('nova_draft_state', state);
+    return NextResponse.json(state);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update state' }, { status: 500 });
+  }
 }
