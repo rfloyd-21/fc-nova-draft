@@ -1,5 +1,7 @@
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
+
+const redis = Redis.fromEnv();
 
 const THEMES = [
   { id: 'metal', name: '80s Hair Metal', redTeamName: 'Red Rebels', blueTeamName: 'Blue' },
@@ -37,7 +39,6 @@ function getNextTurn(
     return (pos === 0 || pos === 3) ? firstPicker : second;
   }
 
-  // Alternating: 1 2 2 1 2 1 2 1 2 ...
   if (pickCount === 0) return firstPicker;
   if (pickCount === 1) return second;
   if (pickCount === 2) return second;
@@ -46,13 +47,14 @@ function getNextTurn(
 
 export async function GET() {
   try {
-    let state: any = await kv.get('nova_draft_state');
+    let state: any = await redis.get('nova_draft_state');
     if (!state) {
       state = await getInitialState();
-      await kv.set('nova_draft_state', state);
+      await redis.set('nova_draft_state', state);
     }
     return NextResponse.json(state);
   } catch (error) {
+    console.error('GET error:', error);
     return NextResponse.json({ error: 'Failed to fetch state' }, { status: 500 });
   }
 }
@@ -61,7 +63,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { action, payload } = body;
-    let state: any = await kv.get('nova_draft_state');
+    let state: any = await redis.get('nova_draft_state');
 
     if (!state) state = await getInitialState();
 
@@ -133,9 +135,10 @@ export async function POST(request: Request) {
       }
     }
 
-    await kv.set('nova_draft_state', state);
+    await redis.set('nova_draft_state', state);
     return NextResponse.json(state);
   } catch (error) {
+    console.error('POST error:', error);
     return NextResponse.json({ error: 'Failed to update state' }, { status: 500 });
   }
 }
