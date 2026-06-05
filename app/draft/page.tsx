@@ -101,221 +101,243 @@ export default function DraftPage() {
 
   if (!state) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500 font-medium">Connecting to locker room...</p>
+      <div style={{minHeight:'100vh',background:'linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <div style={{textAlign:'center',color:'white'}}>
+          <div style={{fontSize:'48px',marginBottom:'16px'}}>⚽️</div>
+          <p style={{color:'#a0aec0',fontFamily:'sans-serif',fontWeight:600}}>Connecting to locker room...</p>
+        </div>
       </div>
     );
   }
 
-  const themeStyles: any = {
-    metal: { bg: 'bg-zinc-50', card: 'border-2 border-purple-500', btn: 'bg-gradient-to-r from-pink-500 to-purple-600 text-white', font: 'font-mono' },
-    lounge: { bg: 'bg-amber-50/30', card: 'border-2 border-amber-600 bg-amber-50/50', btn: 'bg-orange-600 text-white', font: 'font-serif' },
-    cigar: { bg: 'bg-slate-100', card: 'border-2 border-slate-800 bg-white shadow-sm', btn: 'bg-slate-800 text-white', font: 'font-serif' },
-    soccer: { bg: 'bg-stone-100', card: 'border-4 border-double border-stone-700 bg-orange-50/10', btn: 'bg-stone-800 text-stone-100', font: 'font-sans tracking-tight font-bold' },
-    lasers: { bg: 'bg-white', card: 'border-2 border-cyan-400 border-dashed', btn: 'bg-cyan-500 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]', font: 'font-mono' },
+  const themes: any = {
+    metal: {
+      bg: 'linear-gradient(135deg, #1a1a1a 0%, #2d1b4e 100%)',
+      card: 'rgba(255,255,255,0.05)',
+      border: '#9333ea',
+      accent: '#ec4899',
+      text: '#f0e6ff',
+      btn: 'linear-gradient(90deg, #ec4899, #9333ea)',
+      font: '"Courier New", monospace',
+      emoji: '🎸',
+    },
+    lounge: {
+      bg: 'linear-gradient(135deg, #2c1a0e 0%, #4a2c0a 100%)',
+      card: 'rgba(255,220,150,0.08)',
+      border: '#d97706',
+      accent: '#f59e0b',
+      text: '#fef3c7',
+      btn: 'linear-gradient(90deg, #d97706, #b45309)',
+      font: 'Georgia, serif',
+      emoji: '🎷',
+    },
+    cigar: {
+      bg: 'linear-gradient(135deg, #0f0f0f 0%, #1c1c1c 100%)',
+      card: 'rgba(255,255,255,0.04)',
+      border: '#525252',
+      accent: '#a3a3a3',
+      text: '#e5e5e5',
+      btn: 'linear-gradient(90deg, #404040, #262626)',
+      font: 'Georgia, serif',
+      emoji: '🥃',
+    },
+    soccer: {
+      bg: 'linear-gradient(135deg, #1a3a1a 0%, #2d5a1b 50%, #1a3a1a 100%)',
+      card: 'rgba(255,255,255,0.07)',
+      border: '#4ade80',
+      accent: '#86efac',
+      text: '#f0fdf4',
+      btn: 'linear-gradient(90deg, #16a34a, #15803d)',
+      font: '"Arial Black", sans-serif',
+      emoji: '⚽️',
+    },
+    lasers: {
+      bg: 'linear-gradient(135deg, #000000 0%, #0a0a2e 100%)',
+      card: 'rgba(34,211,238,0.05)',
+      border: '#22d3ee',
+      accent: '#67e8f9',
+      text: '#ecfeff',
+      btn: 'linear-gradient(90deg, #0891b2, #0e7490)',
+      font: '"Courier New", monospace',
+      emoji: '🔮',
+    },
   };
-  const currentStyle = themeStyles[state.theme.id] || themeStyles.soccer;
+
+  const t = themes[state.theme.id] || themes.soccer;
+
+  const cardStyle = {
+    background: t.card,
+    border: `1px solid ${t.border}`,
+    borderRadius: '16px',
+    padding: '20px',
+    marginBottom: '16px',
+  };
+
+  const btnStyle = {
+    background: t.btn,
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    padding: '12px 20px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    fontSize: '13px',
+    letterSpacing: '0.05em',
+    textTransform: 'uppercase' as const,
+    width: '100%',
+  };
+
+  const inputStyle = {
+    background: 'rgba(255,255,255,0.1)',
+    border: `1px solid ${t.border}`,
+    borderRadius: '8px',
+    padding: '10px 14px',
+    color: t.text,
+    fontSize: '14px',
+    width: '100%',
+    outline: 'none',
+  };
 
   const iAmFinished = myRole === 'red' ? state.redFinished : state.blueFinished;
   const partnerFinished = myRole === 'red' ? state.blueFinished : state.redFinished;
 
   return (
-    <div className={`min-h-screen ${currentStyle.bg} ${currentStyle.font} text-slate-800 px-4 py-6 max-w-md mx-auto flex flex-col justify-between`}>
-      <header className="text-center mb-6">
-        <h1 className="text-xl font-extrabold uppercase tracking-wide text-slate-900">FC Nova Cidade Oeste</h1>
-        <p className="text-xs font-semibold text-slate-500 mt-1">Weekly Draft Board</p>
-        <div className="inline-block mt-3 px-3 py-1 bg-white border border-slate-200 text-xs rounded-full shadow-xs">
-          Vibe: <span className="underline decoration-indigo-400 font-bold">{state.theme.name}</span>
+    <div style={{minHeight:'100vh',background:t.bg,fontFamily:t.font,color:t.text,padding:'24px 16px',maxWidth:'480px',margin:'0 auto'}}>
+      
+      {/* Header */}
+      <div style={{textAlign:'center',marginBottom:'28px'}}>
+        <div style={{fontSize:'40px',marginBottom:'8px'}}>{t.emoji}</div>
+        <h1 style={{fontSize:'22px',fontWeight:900,letterSpacing:'0.05em',textTransform:'uppercase',margin:'0 0 4px 0',color:'white'}}>FC Nova Cidade Oeste</h1>
+        <p style={{fontSize:'11px',color:t.accent,margin:'0 0 12px 0',letterSpacing:'0.1em',textTransform:'uppercase'}}>Weekly Draft Board</p>
+        <div style={{display:'inline-block',background:'rgba(255,255,255,0.1)',border:`1px solid ${t.border}`,borderRadius:'20px',padding:'4px 14px',fontSize:'12px',color:t.accent}}>
+          ✨ {state.theme.name}
         </div>
-      </header>
+      </div>
 
-      <main className="flex-grow">
-
-        {/* SETUP */}
-        {state.status === 'setup' && (
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-5">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 text-center">Captain Registration</h2>
-
-            <div className="p-3 border rounded-lg bg-red-50/30 border-red-100">
-              <p className="text-xs font-bold text-red-600 uppercase mb-2">🔴 {state.theme.redTeamName}</p>
-              {state.redCaptain ? (
-                <p className="text-sm font-semibold text-slate-700">Checked In: <span className="font-bold">{state.redCaptain}</span></p>
-              ) : myRole === 'blue' ? (
-                <p className="text-xs italic text-slate-400">Waiting for other captain...</p>
-              ) : (
-                <div className="flex gap-2">
-                  <input type="text" placeholder="Your name" value={redNameInput} onChange={e => setRedNameInput(e.target.value)} className="border px-3 py-2 text-sm rounded-md w-full bg-white text-slate-800" />
-                  <button onClick={() => handleRegister('red')} className="bg-red-600 text-white text-xs font-bold px-3 py-2 rounded-md whitespace-nowrap">Claim Red</button>
-                </div>
-              )}
-            </div>
-
-            <div className="p-3 border rounded-lg bg-blue-50/30 border-blue-100">
-              <p className="text-xs font-bold text-blue-600 uppercase mb-2">🔵 {state.theme.blueTeamName}</p>
-              {state.blueCaptain ? (
-                <p className="text-sm font-semibold text-slate-700">Checked In: <span className="font-bold">{state.blueCaptain}</span></p>
-              ) : myRole === 'red' ? (
-                <p className="text-xs italic text-slate-400">Send link to partner...</p>
-              ) : (
-                <div className="flex gap-2">
-                  <input type="text" placeholder="Your name" value={blueNameInput} onChange={e => setBlueNameInput(e.target.value)} className="border px-3 py-2 text-sm rounded-md w-full bg-white text-slate-800" />
-                  <button onClick={() => handleRegister('blue')} className="bg-blue-600 text-white text-xs font-bold px-3 py-2 rounded-md whitespace-nowrap">Claim Blue</button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* COIN FLIP */}
-        {state.status === 'coinflip' && (
-          <div className="text-center py-10 space-y-6">
-            <p className="text-sm font-semibold text-slate-600">{state.redCaptain} 🆚 {state.blueCaptain}</p>
-            <div className="flex justify-center my-4">
-              <div className={`w-28 h-28 rounded-full bg-amber-400 border-4 border-amber-500 shadow-md flex items-center justify-center font-black text-amber-900 text-lg ${isFlipping ? 'animate-spin' : ''}`}>
-                ⚽️ COIN
+      {/* SETUP */}
+      {state.status === 'setup' && (
+        <div style={cardStyle}>
+          <h2 style={{textAlign:'center',fontSize:'11px',letterSpacing:'0.15em',textTransform:'uppercase',color:t.accent,marginBottom:'20px'}}>Captain Registration</h2>
+          
+          <div style={{background:'rgba(239,68,68,0.1)',border:'1px solid rgba(239,68,68,0.3)',borderRadius:'12px',padding:'14px',marginBottom:'12px'}}>
+            <p style={{fontSize:'11px',fontWeight:700,color:'#f87171',textTransform:'uppercase',marginBottom:'10px'}}>🔴 {state.theme.redTeamName}</p>
+            {state.redCaptain ? (
+              <p style={{fontSize:'14px',color:'white'}}>✅ <strong>{state.redCaptain}</strong> checked in</p>
+            ) : myRole === 'blue' ? (
+              <p style={{fontSize:'12px',color:'#9ca3af',fontStyle:'italic'}}>Waiting for captain...</p>
+            ) : (
+              <div style={{display:'flex',gap:'8px'}}>
+                <input style={inputStyle} placeholder="Your name" value={redNameInput} onChange={e => setRedNameInput(e.target.value)} />
+                <button onClick={() => handleRegister('red')} style={{...btnStyle,width:'auto',background:'#dc2626',whiteSpace:'nowrap',padding:'10px 14px'}}>Claim Red</button>
               </div>
-            </div>
-            <button onClick={handleCoinFlip} disabled={isFlipping} className={`w-full py-3 rounded-lg font-bold uppercase text-sm tracking-wider shadow-sm transition ${currentStyle.btn}`}>
-              {isFlipping ? 'Flipping...' : 'Flip Coin'}
+            )}
+          </div>
+
+          <div style={{background:'rgba(59,130,246,0.1)',border:'1px solid rgba(59,130,246,0.3)',borderRadius:'12px',padding:'14px'}}>
+            <p style={{fontSize:'11px',fontWeight:700,color:'#60a5fa',textTransform:'uppercase',marginBottom:'10px'}}>🔵 {state.theme.blueTeamName}</p>
+            {state.blueCaptain ? (
+              <p style={{fontSize:'14px',color:'white'}}>✅ <strong>{state.blueCaptain}</strong> checked in</p>
+            ) : myRole === 'red' ? (
+              <p style={{fontSize:'12px',color:'#9ca3af',fontStyle:'italic'}}>Send link to partner...</p>
+            ) : (
+              <div style={{display:'flex',gap:'8px'}}>
+                <input style={inputStyle} placeholder="Your name" value={blueNameInput} onChange={e => setBlueNameInput(e.target.value)} />
+                <button onClick={() => handleRegister('blue')} style={{...btnStyle,width:'auto',background:'#2563eb',whiteSpace:'nowrap',padding:'10px 14px'}}>Claim Blue</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* COIN FLIP */}
+      {state.status === 'coinflip' && (
+        <div style={{...cardStyle,textAlign:'center',padding:'40px 20px'}}>
+          <p style={{fontSize:'14px',color:t.accent,marginBottom:'24px'}}>{state.redCaptain} ⚔️ {state.blueCaptain}</p>
+          <div style={{width:'120px',height:'120px',borderRadius:'50%',background:'linear-gradient(135deg,#f59e0b,#d97706)',border:'4px solid #fbbf24',margin:'0 auto 28px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'40px',animation:isFlipping?'spin 0.5s linear infinite':'none'}}>
+            ⚽️
+          </div>
+          <button onClick={handleCoinFlip} disabled={isFlipping} style={btnStyle}>
+            {isFlipping ? 'Flipping...' : '🪙 Flip Coin'}
+          </button>
+        </div>
+      )}
+
+      {/* DRAFT STYLE */}
+      {state.status === 'style' && (
+        <div style={cardStyle}>
+          <div style={{background:'rgba(251,191,36,0.1)',border:'1px solid rgba(251,191,36,0.3)',borderRadius:'10px',padding:'12px',marginBottom:'20px',textAlign:'center'}}>
+            <p style={{fontSize:'13px',fontWeight:700,color:'#fbbf24'}}>
+              🏆 {state.coinFlipResult === 'red' ? state.redCaptain : state.blueCaptain} won the flip and picks first!
+            </p>
+          </div>
+          <h2 style={{textAlign:'center',fontSize:'11px',letterSpacing:'0.15em',textTransform:'uppercase',color:t.accent,marginBottom:'16px'}}>Choose Draft Style</h2>
+          <div style={{display:'flex',flexDirection:'column' as const,gap:'10px'}}>
+            <button onClick={() => runAction('set_draft_style', { style: 'snake' })} style={{background:'rgba(255,255,255,0.05)',border:`1px solid ${t.border}`,borderRadius:'12px',padding:'16px',textAlign:'left' as const,cursor:'pointer',color:t.text}}>
+              <p style={{fontWeight:700,fontSize:'15px',margin:'0 0 4px 0'}}>🐍 Snake Draft</p>
+              <p style={{fontSize:'11px',color:t.accent,margin:'0 0 2px 0'}}>1 → 2 → 2 → 1 → 1 → 2 → 2 → 1...</p>
+              <p style={{fontSize:'11px',color:'#6b7280',margin:0}}>Classic fantasy sports format</p>
+            </button>
+            <button onClick={() => runAction('set_draft_style', { style: 'alternating' })} style={{background:'rgba(255,255,255,0.05)',border:`1px solid ${t.border}`,borderRadius:'12px',padding:'16px',textAlign:'left' as const,cursor:'pointer',color:t.text}}>
+              <p style={{fontWeight:700,fontSize:'15px',margin:'0 0 4px 0'}}>🔄 Alternating Draft</p>
+              <p style={{fontSize:'11px',color:t.accent,margin:'0 0 2px 0'}}>1 → 2 → 2 → 1 → 2 → 1 → 2 → 1...</p>
+              <p style={{fontSize:'11px',color:'#6b7280',margin:0}}>Pair at the start, then strict alternating</p>
             </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* DRAFT STYLE SELECTION */}
-        {state.status === 'style' && (
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-5 text-center">
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm font-bold text-amber-800">
-                🏆 {state.coinFlipResult === 'red' ? state.redCaptain : state.blueCaptain} won the coin flip and picks first!
+      {/* DRAFTING + FINISHING */}
+      {(state.status === 'drafting' || state.status === 'finishing' || state.status === 'finished') && (
+        <div>
+          {state.status === 'drafting' && (
+            <div style={{...cardStyle,textAlign:'center',padding:'14px'}}>
+              {state.turn === myRole ? (
+                <p style={{fontSize:'14px',fontWeight:700,color:'#4ade80',margin:0}}>🔥 Your turn! Pick below.</p>
+              ) : (
+                <p style={{fontSize:'13px',color:t.accent,margin:0}}>⏳ Waiting on {state.turn === 'red' ? state.redCaptain : state.blueCaptain}...</p>
+              )}
+              <p style={{fontSize:'10px',color:'#6b7280',margin:'4px 0 0 0'}}>
+                {state.draftStyle === 'snake' ? '🐍 Snake' : '🔄 Alternating'} Draft
               </p>
             </div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Choose Draft Style</h2>
-            <div className="space-y-3">
-              <button onClick={() => runAction('set_draft_style', { style: 'snake' })} className="w-full p-4 border-2 border-slate-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 transition text-left">
-                <p className="font-bold text-slate-800">🐍 Snake Draft</p>
-                <p className="text-xs text-slate-500 mt-1">1 → 2 → 2 → 1 → 1 → 2 → 2 → 1...</p>
-                <p className="text-xs text-slate-400 mt-0.5">Classic fantasy sports format</p>
-              </button>
-              <button onClick={() => runAction('set_draft_style', { style: 'alternating' })} className="w-full p-4 border-2 border-slate-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 transition text-left">
-                <p className="font-bold text-slate-800">🔄 Alternating Draft</p>
-                <p className="text-xs text-slate-500 mt-1">1 → 2 → 2 → 1 → 2 → 1 → 2 → 1...</p>
-                <p className="text-xs text-slate-400 mt-0.5">Pair at the start, then strict alternating</p>
-              </button>
+          )}
+
+          {state.status === 'drafting' && state.turn === myRole && (
+            <form onSubmit={handlePick} style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
+              <input style={inputStyle} placeholder="Type player full name..." value={playerInput} onChange={e => { setPlayerInput(e.target.value); setPickError(''); }} required />
+              <button type="submit" style={{...btnStyle,width:'auto',whiteSpace:'nowrap',padding:'10px 18px'}}>Draft</button>
+            </form>
+          )}
+          {pickError && <p style={{fontSize:'12px',color:'#f87171',marginBottom:'12px'}}>{pickError}</p>}
+
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',marginBottom:'16px'}}>
+            <div style={cardStyle}>
+              <div style={{textAlign:'center',borderBottom:`1px solid ${t.border}`,paddingBottom:'10px',marginBottom:'10px'}}>
+                <p style={{fontSize:'11px',fontWeight:900,color:'#f87171',textTransform:'uppercase',margin:'0 0 2px 0'}}>{state.theme.redTeamName}</p>
+                <p style={{fontSize:'10px',color:'#6b7280',margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>Cap: {state.redCaptain}</p>
+              </div>
+              <ul style={{listStyle:'none',padding:0,margin:0,minHeight:'120px'}}>
+                {shuffledRed.map((p: any) => (
+                  <li key={p.id} style={{fontSize:'12px',fontWeight:600,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'6px',padding:'6px 8px',marginBottom:'6px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>• {p.player}</li>
+                ))}
+              </ul>
+            </div>
+            <div style={cardStyle}>
+              <div style={{textAlign:'center',borderBottom:`1px solid ${t.border}`,paddingBottom:'10px',marginBottom:'10px'}}>
+                <p style={{fontSize:'11px',fontWeight:900,color:'#60a5fa',textTransform:'uppercase',margin:'0 0 2px 0'}}>{state.theme.blueTeamName}</p>
+                <p style={{fontSize:'10px',color:'#6b7280',margin:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>Cap: {state.blueCaptain}</p>
+              </div>
+              <ul style={{listStyle:'none',padding:0,margin:0,minHeight:'120px'}}>
+                {shuffledBlue.map((p: any) => (
+                  <li key={p.id} style={{fontSize:'12px',fontWeight:600,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'6px',padding:'6px 8px',marginBottom:'6px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>• {p.player}</li>
+                ))}
+              </ul>
             </div>
           </div>
-        )}
 
-        {/* DRAFTING + FINISHING */}
-        {(state.status === 'drafting' || state.status === 'finishing' || state.status === 'finished') && (
-          <div className="space-y-5">
-
-            {state.status === 'drafting' && (
-              <div className="text-center p-3 rounded-lg border bg-white shadow-xs">
-                {state.turn === myRole ? (
-                  <div className="animate-pulse text-sm font-bold text-emerald-600">🔥 Your turn! Pick below.</div>
-                ) : (
-                  <div className="text-sm font-semibold text-slate-500">
-                    ⏳ Waiting on {state.turn === 'red' ? state.redCaptain : state.blueCaptain}...
-                  </div>
-                )}
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Style: {state.draftStyle === 'snake' ? '🐍 Snake' : '🔄 Alternating'}
-                </p>
-              </div>
+          <div style={{display:'flex',gap:'8px',marginBottom:'16px'}}>
+            {state.status === 'drafting' && state.picks.length > 0 && state.picks[state.picks.length - 1].team === myRole && (
+              <button onClick={() => runAction('undo')} style={{flex:1,background:'rgba(255,255,255,0.05)',border:`1px solid ${t.border}`,borderRadius:'10px',padding:'10px',color:t.text,fontWeight:700,cursor:'pointer',fontSize:'12px'}}>
+                ↩ Undo
+              </button>
             )}
-
-            {state.status === 'drafting' && state.turn === myRole && (
-              <form onSubmit={handlePick} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Type player full name..."
-                  value={playerInput}
-                  onChange={e => { setPlayerInput(e.target.value); setPickError(''); }}
-                  className="border border-slate-300 px-3 py-3 text-sm rounded-lg w-full bg-white text-slate-800 font-medium"
-                  required
-                />
-                <button type="submit" className={`px-5 py-3 rounded-lg font-bold text-xs uppercase tracking-wider ${currentStyle.btn}`}>
-                  Lock
-                </button>
-              </form>
-            )}
-            {pickError && <p className="text-xs text-red-500 font-semibold -mt-3">{pickError}</p>}
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs">
-                <div className="text-center border-b pb-2 mb-2">
-                  <p className="text-xs font-black text-red-600 uppercase tracking-tight">{state.theme.redTeamName}</p>
-                  <p className="text-[10px] font-bold text-slate-400 truncate">Cap: {state.redCaptain}</p>
-                </div>
-                <ul className="space-y-1.5 min-h-[150px]">
-                  {shuffledRed.map((p: any) => (
-                    <li key={p.id} className="text-xs font-semibold bg-slate-50 border border-slate-100 p-2 rounded-md truncate text-slate-700">• {p.player}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs">
-                <div className="text-center border-b pb-2 mb-2">
-                  <p className="text-xs font-black text-blue-600 uppercase tracking-tight">{state.theme.blueTeamName}</p>
-                  <p className="text-[10px] font-bold text-slate-400 truncate">Cap: {state.blueCaptain}</p>
-                </div>
-                <ul className="space-y-1.5 min-h-[150px]">
-                  {shuffledBlue.map((p: any) => (
-                    <li key={p.id} className="text-xs font-semibold bg-slate-50 border border-slate-100 p-2 rounded-md truncate text-slate-700">• {p.player}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              {state.status === 'drafting' &&
-                state.picks.length > 0 &&
-                state.picks[state.picks.length - 1].team === myRole && (
-                  <button
-                    onClick={() => runAction('undo')}
-                    className="w-1/2 border border-slate-300 bg-white text-slate-600 font-bold py-2 px-3 rounded-lg text-xs flex items-center justify-center gap-1 shadow-xs hover:bg-slate-50"
-                  >
-                    ↩ Undo Last Pick
-                  </button>
-                )}
-
-              {(state.status === 'drafting' || state.status === 'finishing') &&
-                state.picks.length >= 2 &&
-                !iAmFinished && (
-                  <button
-                    onClick={handleFinish}
-                    className="w-full bg-slate-900 text-white font-bold py-2 px-3 rounded-lg text-xs uppercase tracking-wider shadow-xs ml-auto"
-                  >
-                    🏁 Lock My Side
-                  </button>
-                )}
-            </div>
-
-            {state.status === 'finishing' && iAmFinished && !partnerFinished && (
-              <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center">
-                <p className="text-xs font-bold text-amber-700">⏳ Waiting for {myRole === 'red' ? state.blueCaptain : state.redCaptain} to lock their side...</p>
-              </div>
-            )}
-
-            {state.status === 'finished' && (
-              <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-center space-y-3">
-                <p className="text-xs font-bold text-emerald-800 uppercase tracking-wide">🏆 Draft Complete & Locked!</p>
-                <button onClick={handleWhatsAppCopy} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 px-4 rounded-lg text-xs uppercase tracking-wider shadow-sm transition">
-                  Copy to WhatsApp 📲
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </main>
-
-      <footer className="mt-8 pt-4 border-t border-slate-200/60 text-center">
-        <button
-          onClick={() => { if (confirm('Permanently wipe current state?')) runAction('reset'); }}
-          className="text-[10px] uppercase font-bold tracking-widest text-slate-300 hover:text-red-400 transition"
-        >
-          ☢ Manual System Reset
-        </button>
-      </footer>
-    </div>
-  );
-}
